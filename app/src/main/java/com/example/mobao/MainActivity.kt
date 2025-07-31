@@ -14,10 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.mobao.navigation.AppNavigation
-import com.example.mobao.navigation.BottomNavItem
-import com.example.mobao.ui.theme.MobaoTheme
+import com.example.mobao.ui.navigation.AppNavigation
+import com.example.mobao.ui.navigation.BottomNavItem
 import androidx.navigation.compose.rememberNavController
+import com.example.mobao.ui.theme.MobaoTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

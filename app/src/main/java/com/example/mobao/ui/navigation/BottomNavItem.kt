@@ -1,4 +1,4 @@
-package com.example.mobao.navigation
+package com.example.mobao.ui.navigation
 
 import androidx.compose.ui.graphics.vector.ImageVector
 
