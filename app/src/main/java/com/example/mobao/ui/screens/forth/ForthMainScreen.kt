@@ -12,12 +12,21 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.mobao.data.model.Medicine
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Medication
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(
+fun ForthMainScreen(
     navController: NavController,
-    viewModel: MainViewModel
+    viewModel: ForthMainViewModel
 ) {
     val allMedicines by viewModel.medicines.collectAsStateWithLifecycle(initialValue = emptyList())
     val activeMedicines = allMedicines.filter { it.remainingPillCount == null || it.remainingPillCount > 0 }
@@ -111,14 +120,14 @@ fun MainScreen(
 
                 Button(onClick = {
                     showAddSheet = false
-                    navController.navigate("forth") // 카메라/갤러리 OCR 화면
+                    navController.navigate("addMedicine") // 카메라/갤러리 OCR 화면
                 }) {
                     Text("카메라로 추가")
                 }
 
                 Button(onClick = {
                     showAddSheet = false
-                    navController.navigate("forth") // forth화면에서 갤러리 처리
+                    navController.navigate("addMedicine") // addMedicine 화면에서 갤러리 처리
                 }) {
                     Text("갤러리에서 추가")
                 }
@@ -142,16 +151,38 @@ fun MedicineItem(medicine: Medicine, onClick: () -> Unit) {
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = medicine.name, style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "알림 시간 리스트(JSON): ${medicine.reminderTimesJson}",
-                style = MaterialTheme.typography.bodyMedium
+        // 아이콘과 텍스트를 중앙 정렬하기 위해 Column의 horizontalAlignment 지정
+        Column(
+            modifier = Modifier
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // 1) 약 모양 아이콘
+            Icon(
+                imageVector = Icons.Default.Medication,          // 머터리얼 아이콘 사용
+                contentDescription = "약 아이콘",
+                modifier = Modifier.size(40.dp)                  // 원하는 크기로 조절
             )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 2) 약 이름
+            Text(
+                text = medicine.name,
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // (선택) 남은 개수 표시
             medicine.remainingPillCount?.let {
-                Text(text = "남은 개수: $it", style = MaterialTheme.typography.bodySmall)
-            } ?: Text("남은 개수: 무제한", style = MaterialTheme.typography.bodySmall)
+                Text(
+                    text = "남은 개수: $it",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            } ?: Text(
+                text = "남은 개수: 무제한",
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }

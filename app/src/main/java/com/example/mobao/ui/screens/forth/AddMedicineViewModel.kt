@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalTime
 
 @HiltViewModel
-class ForthViewModel @Inject constructor(
+class AddMedicineViewModel @Inject constructor(
     private val repository: MedicineRepository
 ) : ViewModel() {
 

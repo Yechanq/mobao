@@ -80,7 +80,7 @@ fun BottomNavigationBar(navController: NavHostController) {
         BottomNavItem("1", Icons.Default.Home, "first"),
         BottomNavItem("2", Icons.Default.Call, "second"),
         BottomNavItem("3", Icons.Default.Notifications, "third"),
-        BottomNavItem("4", Icons.Default.Person, "forth")
+        BottomNavItem("4", Icons.Default.Person, "forthMain")
     )
 
     NavigationBar {

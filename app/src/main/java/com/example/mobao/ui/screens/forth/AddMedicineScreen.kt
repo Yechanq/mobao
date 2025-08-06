@@ -19,15 +19,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import java.time.LocalTime
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForthScreen(navController: NavController) {
-    val viewModel: ForthViewModel = hiltViewModel()
+fun AddMedicineScreen(navController: NavController) {
+    val viewModel: AddMedicineViewModel = hiltViewModel()
     val context = LocalContext.current
     val prescriptionInfo by viewModel.prescriptionInfo.collectAsStateWithLifecycle()
 
@@ -80,7 +80,6 @@ fun ForthScreen(navController: NavController) {
             prescriptionInfo?.let { info ->
                 Text("하루 복용 횟수: ${info.dailyDoseCount ?: 0}", fontSize = 18.sp)
                 Text("총 복용량: ${info.totalPillCount ?: 0}", fontSize = 18.sp)
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
@@ -89,16 +88,20 @@ fun ForthScreen(navController: NavController) {
                     label = { Text("약 이름") },
                     modifier = Modifier.fillMaxWidth()
                 )
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(onClick = {
                     if (name.isNotBlank()) {
+                        // 1) DB에 삽입 + 알림 스케줄
                         viewModel.addManualMedicineWithTimes(
                             name = name,
                             times = listOf(LocalTime.now()),
                             count = info.totalPillCount
                         )
+                        // 2) MainScreen으로 이동
+                        navController.navigate("forthMain") {
+                            popUpTo("first") { inclusive = false }
+                        }
                     }
                 }) {
                     Text("OCR 정보로 약 등록")
@@ -107,7 +110,7 @@ fun ForthScreen(navController: NavController) {
         }
     }
 
-    // 약 추가하기 BottomSheet
+    // BottomSheet: 추가 방법 선택
     if (showAddSheet) {
         ModalBottomSheet(onDismissRequest = { showAddSheet = false }) {
             Column(
@@ -134,7 +137,7 @@ fun ForthScreen(navController: NavController) {
 
                 Button(onClick = {
                     showAddSheet = false
-                    navController.navigate("manualInput") // 직접 추가 화면 이동
+                    navController.navigate("manualInput")
                 }) {
                     Text("직접 추가")
                 }

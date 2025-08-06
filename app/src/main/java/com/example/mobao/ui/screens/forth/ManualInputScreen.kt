@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -19,7 +20,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ManualInputScreen(
     navController: NavController,
-    viewModel: ForthViewModel
+    viewModel: ForthMainViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     var name by remember { mutableStateOf("") }
@@ -59,7 +60,10 @@ fun ManualInputScreen(
             Spacer(Modifier.height(8.dp))
 
             if (times.isEmpty()) {
-                Text("알림 시간이 없습니다. 아래 버튼을 눌러 추가하세요.", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    "알림 시간이 없습니다. 아래 버튼을 눌러 추가하세요.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
             } else {
                 LazyColumn {
                     itemsIndexed(times) { index, time ->
@@ -70,7 +74,9 @@ fun ManualInputScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(time.format(timeFormatter), style = MaterialTheme.typography.bodyLarge)
-                            Button(onClick = { times.removeAt(index) }) { Text("삭제") }
+                            Button(onClick = { times.removeAt(index) }) {
+                                Text("삭제")
+                            }
                         }
                     }
                 }
@@ -80,7 +86,9 @@ fun ManualInputScreen(
             Button(onClick = {
                 TimePickerDialog(
                     context,
-                    { _, hour, minute -> times.add(LocalTime.of(hour, minute)) },
+                    { _, hour, minute ->
+                        times.add(LocalTime.of(hour, minute))
+                    },
                     LocalTime.now().hour,
                     LocalTime.now().minute,
                     true
@@ -94,8 +102,12 @@ fun ManualInputScreen(
                 onClick = {
                     if (name.isNotBlank()) {
                         val count = countText.toIntOrNull()
-                        viewModel.addManualMedicineWithTimes(name, times.toList(), count)
-                        navController.popBackStack()
+                        // DB 저장 및 알림 스케줄링
+                        viewModel.insertMedicineWithTimes(name, times.toList(), count)
+                        // 메인 화면으로 이동
+                        navController.navigate("forthMain") {
+                            popUpTo("first") { inclusive = false }
+                        }
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
