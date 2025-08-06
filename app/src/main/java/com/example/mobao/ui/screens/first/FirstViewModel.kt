@@ -25,21 +25,11 @@ class FirstViewModel @Inject constructor(
 
     private fun loadPosts() {
         viewModelScope.launch {
+            // PostRepository에서 게시글 목록을 가져와 _posts에 업데이트합니다.
+            // Firestore의 addSnapshotListener 덕분에 실시간으로 업데이트됩니다.
             postRepository.getPosts().collect {
                 _posts.value = it
             }
-        }
-    }
-
-    fun addPost(title: String, content: String, author: String) {
-        viewModelScope.launch {
-            val newPost = Post(
-                title = title,
-                content = content,
-                author = author,
-            )
-            // Firebase에 게시글 추가
-            postRepository.addPost(newPost)
         }
     }
 }

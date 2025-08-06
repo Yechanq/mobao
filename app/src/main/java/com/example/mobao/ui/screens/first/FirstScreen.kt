@@ -12,15 +12,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-// 아래 import를 변경해야 합니다.
-// import androidx.lifecycle.viewmodel.compose.viewModel // 이 줄을 삭제하거나 주석 처리하세요.
-import androidx.hilt.navigation.compose.hiltViewModel // 이 줄을 추가하세요.
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController // NavHostController import 추가
 import com.example.mobao.data.model.Post
 
 @Composable
 fun FirstScreen(
-    // 이 부분을 변경해야 합니다.
-    viewModel: FirstViewModel = hiltViewModel() // viewModel() 대신 hiltViewModel() 사용
+    // NavHostController를 파라미터로 추가합니다.
+    navController: NavHostController,
+    viewModel: FirstViewModel = hiltViewModel()
 ) {
     // ViewModel의 posts StateFlow를 관찰합니다.
     val posts by viewModel.posts.collectAsState()
@@ -40,8 +40,8 @@ fun FirstScreen(
 
         // 게시글 추가 버튼
         Button(onClick = {
-            // 예시: 새 게시글 추가 로직
-            viewModel.addPost("새로운 글 제목", "새로운 글 내용", "작성자 이름")
+            // "post" 라우트로 이동합니다.
+            navController.navigate("post")
         }, modifier = Modifier.fillMaxWidth()) {
             Text(text = "게시글 작성")
         }
@@ -55,11 +55,6 @@ fun PostItem(post: Post) {
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = post.title, style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = post.content, style = MaterialTheme.typography.bodyMedium)
-            Text(text = "작성자: ${post.author}", style = MaterialTheme.typography.bodySmall)
-        }
+
     }
 }
