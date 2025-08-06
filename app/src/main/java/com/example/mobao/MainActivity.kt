@@ -18,7 +18,9 @@ import com.example.mobao.ui.navigation.AppNavigation
 import com.example.mobao.ui.navigation.BottomNavItem
 import androidx.navigation.compose.rememberNavController
 import com.example.mobao.ui.theme.MobaoTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
