@@ -5,22 +5,32 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Medication
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.mobao.data.model.Medicine
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Medication
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,10 +40,8 @@ fun ForthMainScreen(
 ) {
     val allMedicines by viewModel.medicines.collectAsStateWithLifecycle(initialValue = emptyList())
     val activeMedicines = allMedicines.filter { it.remainingPillCount == null || it.remainingPillCount > 0 }
-    val completedMedicines = allMedicines.filter { it.remainingPillCount != null && it.remainingPillCount == 0 }
+    val completedMedicines = allMedicines.filter { it.remainingPillCount == 0 }
 
-    var selectedMedicine by remember { mutableStateOf<Medicine?>(null) }
-    var showDialog by remember { mutableStateOf(false) }
     var showAddSheet by remember { mutableStateOf(false) }
     var completedVisible by remember { mutableStateOf(false) }
 
@@ -50,39 +58,41 @@ fun ForthMainScreen(
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            Text(text = "복용 중인 약 (${activeMedicines.size})", style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(8.dp))
+            // 복용 중인 약 리스트
+            Text(
+                text = "복용 중인 약 (${activeMedicines.size})",
+                style = MaterialTheme.typography.titleLarge
+            )
+            Spacer(Modifier.height(8.dp))
             if (activeMedicines.isEmpty()) {
                 Text("복용 중인 약이 없습니다.", style = MaterialTheme.typography.bodyMedium)
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(activeMedicines) { medicine: Medicine ->
+                    items(activeMedicines) { medicine ->
                         MedicineItem(medicine) {
-                            selectedMedicine = medicine
-                            showDialog = true
+                            navController.navigate("medicineDetail/${medicine.id}")
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
 
+            // 복용 완료 약 토글
             Text(
                 text = "복용 완료한 약 (${completedMedicines.size})",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.clickable { completedVisible = !completedVisible }
             )
-            Spacer(modifier = Modifier.height(8.dp))
-
+            Spacer(Modifier.height(8.dp))
             AnimatedVisibility(visible = completedVisible) {
                 if (completedMedicines.isEmpty()) {
                     Text("복용 완료한 약이 없습니다.", style = MaterialTheme.typography.bodyMedium)
                 } else {
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(completedMedicines) { medicine: Medicine ->
+                        items(completedMedicines) { medicine ->
                             MedicineItem(medicine) {
-                                selectedMedicine = medicine
-                                showDialog = true
+                                navController.navigate("medicineDetail/${medicine.id}")
                             }
                         }
                     }
@@ -91,23 +101,7 @@ fun ForthMainScreen(
         }
     }
 
-    // 약 수정/삭제 다이얼로그
-    if (showDialog && selectedMedicine != null) {
-        MedicineEditDialog(
-            medicine = selectedMedicine!!,
-            onDismiss = { showDialog = false },
-            onUpdate = { newCount ->
-                viewModel.updateMedicineCount(selectedMedicine!!, newCount)
-                showDialog = false
-            },
-            onDelete = {
-                viewModel.deleteMedicine(selectedMedicine!!)
-                showDialog = false
-            }
-        )
-    }
-
-    // 약 추가하기 BottomSheet
+    // 약 추가 메서드 선택 BottomSheet
     if (showAddSheet) {
         ModalBottomSheet(onDismissRequest = { showAddSheet = false }) {
             Column(
@@ -120,21 +114,21 @@ fun ForthMainScreen(
 
                 Button(onClick = {
                     showAddSheet = false
-                    navController.navigate("addMedicine") // 카메라/갤러리 OCR 화면
+                    navController.navigate("addMedicine")
                 }) {
-                    Text("카메라로 추가")
+                    Text("카메라/OCR로 추가")
                 }
 
                 Button(onClick = {
                     showAddSheet = false
-                    navController.navigate("addMedicine") // addMedicine 화면에서 갤러리 처리
+                    navController.navigate("addMedicine")
                 }) {
-                    Text("갤러리에서 추가")
+                    Text("갤러리로 추가")
                 }
 
                 Button(onClick = {
                     showAddSheet = false
-                    navController.navigate("manualInput") // 직접 추가 화면
+                    navController.navigate("manualInput")
                 }) {
                     Text("직접 추가")
                 }
@@ -148,79 +142,28 @@ fun MedicineItem(medicine: Medicine, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        // 아이콘과 텍스트를 중앙 정렬하기 위해 Column의 horizontalAlignment 지정
         Column(
-            modifier = Modifier
-                .padding(16.dp),
+            modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 1) 약 모양 아이콘
             Icon(
-                imageVector = Icons.Default.Medication,          // 머터리얼 아이콘 사용
+                imageVector = Icons.Default.Medication,
                 contentDescription = "약 아이콘",
-                modifier = Modifier.size(40.dp)                  // 원하는 크기로 조절
+                modifier = Modifier.size(40.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // 2) 약 이름
+            Spacer(Modifier.height(8.dp))
             Text(
                 text = medicine.name,
                 style = MaterialTheme.typography.titleMedium
             )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // (선택) 남은 개수 표시
-            medicine.remainingPillCount?.let {
-                Text(
-                    text = "남은 개수: $it",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            } ?: Text(
-                text = "남은 개수: 무제한",
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = medicine.remainingPillCount?.let { "남은 개수: $it" } ?: "남은 개수: 무제한",
                 style = MaterialTheme.typography.bodySmall
             )
         }
     }
-}
-
-@Composable
-fun MedicineEditDialog(
-    medicine: Medicine,
-    onDismiss: () -> Unit,
-    onUpdate: (Int?) -> Unit,
-    onDelete: () -> Unit
-) {
-    var countText by remember { mutableStateOf(medicine.remainingPillCount?.toString() ?: "") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("${medicine.name} 수정") },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = countText,
-                    onValueChange = { newValue -> countText = newValue.filter { it.isDigit() } },
-                    label = { Text("남은 개수 (비워두면 무제한)") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        },
-        confirmButton = {
-            Button(onClick = {
-                val newCount = countText.toIntOrNull()
-                onUpdate(newCount)
-            }) { Text("저장") }
-        },
-        dismissButton = {
-            Row {
-                TextButton(onClick = onDelete) { Text("삭제") }
-                Spacer(Modifier.width(8.dp))
-                TextButton(onClick = onDismiss) { Text("취소") }
-            }
-        }
-    )
 }

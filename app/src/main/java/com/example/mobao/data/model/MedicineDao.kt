@@ -18,6 +18,6 @@ interface MedicineDao {
     @Delete
     suspend fun deleteMedicine(medicine: Medicine)
 
-    @Query("SELECT * FROM medicines WHERE id = :medicineId LIMIT 1")
-    suspend fun getMedicineById(medicineId: Int): Medicine?
+    @Query("SELECT * FROM medicines WHERE id = :medicineId")
+    fun getMedicineByIdFlow(medicineId: Int): Flow<Medicine>
 }
