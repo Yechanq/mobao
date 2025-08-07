@@ -10,7 +10,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [Medicine::class],
-    version = 3
+    version = 3,
+    exportSchema = false // 이 부분을 추가합니다.
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -52,5 +53,3 @@ abstract class AppDatabase : RoomDatabase() {
             }
     }
 }
-
-

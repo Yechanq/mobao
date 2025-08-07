@@ -4,13 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
-import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import com.example.mobao.ui.screens.first.FirstScreen
 import com.example.mobao.ui.screens.first.PostDetailScreen
-import com.example.mobao.ui.screens.forth.ForthScreen
 import com.example.mobao.ui.screens.first.PostScreen
 import com.example.mobao.ui.screens.second.SecondScreen
 import com.example.mobao.ui.screens.third.ThirdScreen
