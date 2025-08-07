@@ -1,4 +1,4 @@
-package com.example.mobao.ui.screens.post
+package com.example.mobao.ui.screens.first
 
 import androidx.lifecycle.ViewModel
 import com.example.mobao.data.model.Post

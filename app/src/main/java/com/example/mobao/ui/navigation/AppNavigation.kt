@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.mobao.ui.screens.first.FirstScreen
 import com.example.mobao.ui.screens.forth.ForthScreen
-import com.example.mobao.ui.screens.post.PostScreen // PostScreen import 확인
+import com.example.mobao.ui.screens.first.PostScreen // PostScreen import 확인
 import com.example.mobao.ui.screens.second.SecondScreen
 import com.example.mobao.ui.screens.third.ThirdScreen
 

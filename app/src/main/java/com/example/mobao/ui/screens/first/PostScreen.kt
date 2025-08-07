@@ -1,4 +1,4 @@
-package com.example.mobao.ui.screens.post
+package com.example.mobao.ui.screens.first
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
