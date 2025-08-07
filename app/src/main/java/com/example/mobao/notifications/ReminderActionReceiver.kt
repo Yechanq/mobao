@@ -1,4 +1,3 @@
-// notifications/ReminderActionReceiver.kt
 package com.example.mobao.notifications
 
 import android.app.AlarmManager
@@ -7,12 +6,16 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import androidx.core.app.NotificationManagerCompat
 import com.example.mobao.data.model.DatabaseProvider
 import com.example.mobao.util.AlarmHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import java.time.LocalTime
 
 class ReminderActionReceiver : BroadcastReceiver() {
 
@@ -23,53 +26,73 @@ class ReminderActionReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent?) {
-        val action     = intent?.action ?: return
-        val medicineId = intent.getIntExtra("medicineId", -1)
-        if (medicineId < 0) return
+        // 1) 비동기 작업 완료 시점까지 리시버 유지
+        val pendingResult = goAsync()
+        val action     = intent?.action
+        val medicineId = intent?.getIntExtra("medicineId", -1) ?: -1
+        if (action == null || medicineId < 0) {
+            pendingResult.finish()
+            return
+        }
 
         // 즉시 알림 닫기
-        val notificationManager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancel(medicineId)
+        NotificationManagerCompat.from(context).cancel(medicineId)
 
+        // 2) 백그라운드에서 DB 업데이트 및 알람 재스케줄링
         CoroutineScope(Dispatchers.IO).launch {
-            // DB에서 약 정보 가져오기
-            val dao = DatabaseProvider.getDatabase(context).medicineDao()
-            val med = dao.getMedicineByIdFlow(medicineId).firstOrNull()
-            val times = med?.reminderTimes ?: emptyList()
+            try {
+                val dao = DatabaseProvider.getDatabase(context).medicineDao()
+                val med = dao.getMedicineByIdFlow(medicineId).firstOrNull()
+                val times = med?.reminderTimes ?: emptyList()
 
-            when (action) {
-                ACTION_TAKE -> {
-                    // 복용 완료: 남은 개수 -1, 0이 되면 알람 전부 취소
-                    med?.let {
-                        val remaining = (it.remainingPillCount ?: it.totalPillCount ?: 0) - 1
-                        dao.updateMedicine(it.copy(remainingPillCount = remaining.coerceAtLeast(0)))
-                        if (remaining <= 0) {
-                            AlarmHelper.cancelReminders(context, medicineId, times)
+                when (action) {
+                    ACTION_TAKE -> {
+                        med?.let {
+                            val remaining = (it.remainingPillCount ?: it.totalPillCount ?: 0) - 1
+                            // DB에 차감된 개수 저장
+                            dao.updateMedicine(it.copy(remainingPillCount = remaining.coerceAtLeast(0)))
+                            // 0 이하면 기존 알람 모두 취소
+                            if (remaining <= 0) {
+                                AlarmHelper.cancelReminders(context, medicineId, times)
+                            }
+                        }
+                    }
+                    ACTION_SKIP -> {
+                        // 복약하지 않음: 아무것도 안 함
+                    }
+                    ACTION_SNOOZE -> {
+                        // 15분 후 스누즈 알람
+                        val snoozeTime = System.currentTimeMillis() + 15 * 60 * 1000
+                        val pi = PendingIntent.getBroadcast(
+                            context,
+                            medicineId + 20_000,
+                            Intent(context, ReminderReceiver::class.java).apply {
+                                putExtra("medicineId", medicineId)
+                            },
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+                        val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                        // 정확 알람 권한 체크
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                            !alarmMgr.canScheduleExactAlarms()
+                        ) {
+                            Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                .also { context.startActivity(it) }
+                        } else {
+                            try {
+                                alarmMgr.setExactAndAllowWhileIdle(
+                                    AlarmManager.RTC_WAKEUP,
+                                    snoozeTime,
+                                    pi
+                                )
+                            } catch (_: SecurityException) { /* 무시 */ }
                         }
                     }
                 }
-                ACTION_SKIP -> {
-                    // 건너뛰기: 아무 동작 없이 알림만 취소
-                }
-                ACTION_SNOOZE -> {
-                    // 스누즈: 15분 뒤에 다시 알림
-                    val snoozeTime = System.currentTimeMillis() + 15 * 60 * 1000
-                    val pi = PendingIntent.getBroadcast(
-                        context,
-                        medicineId + 20_000,  // unique requestCode
-                        Intent(context, ReminderReceiver::class.java).apply {
-                            putExtra("medicineId", medicineId)
-                        },
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                    )
-                    val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                    alarmMgr.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        snoozeTime,
-                        pi
-                    )
-                }
+            } finally {
+                // 3) 리시버 종료
+                pendingResult.finish()
             }
         }
     }

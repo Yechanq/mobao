@@ -34,17 +34,20 @@ fun MedicineDetailScreen(
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
     if (medicine == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
             CircularProgressIndicator()
         }
         return
     }
 
-    // 1) 로컬 상태 선언 (초기값은 빈 상태)
+    // 1) 로컬 상태 선언
     var countText by remember { mutableStateOf("") }
     var times by remember { mutableStateOf(mutableListOf<LocalTime>()) }
 
-    // 2) medicine 객체가 변경될 때마다 countText, times 갱신
+    // 2) medicine가 바뀔 때마다 상태 갱신
     LaunchedEffect(medicine) {
         countText = medicine!!.remainingPillCount?.toString() ?: ""
         times = medicine!!.reminderTimes.toMutableList()
@@ -56,16 +59,16 @@ fun MedicineDetailScreen(
                 title = { Text(medicine!!.name) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "뒤로")
+                        Icon(Icons.Default.ArrowBack, "뒤로")
                     }
                 }
             )
         }
-    ) { padding ->
+    ) { paddingValues ->
         Column(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(paddingValues)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -81,46 +84,62 @@ fun MedicineDetailScreen(
             // 복용 시간 리스트
             Text("복용 시간", style = MaterialTheme.typography.titleMedium)
             LazyColumn {
-                itemsIndexed(times) { idx, t ->
+                itemsIndexed(times) { idx, time ->
                     Row(
-                        Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(t.format(timeFormatter))
+                        Text(time.format(timeFormatter))
                         Row {
                             IconButton(onClick = {
                                 TimePickerDialog(
                                     context,
-                                    { _, hr, min ->
-                                        times[idx] = LocalTime.of(hr, min)
+                                    { _, hour, minute ->
+                                        val newList = times.toMutableList()
+                                        newList[idx] = LocalTime.of(hour, minute)
+                                        times = newList
                                     },
-                                    t.hour, t.minute, true
+                                    time.hour, time.minute, true
                                 ).show()
                             }) {
-                                Icon(Icons.Default.Edit, contentDescription = "수정")
+                                Icon(Icons.Default.Edit, "수정")
                             }
-                            IconButton(onClick = { times.removeAt(idx) }) {
-                                Icon(Icons.Default.Delete, contentDescription = "삭제")
+                            IconButton(onClick = {
+                                // 삭제 시 snapshot 상태로 새 리스트 할당
+                                times = times.filterIndexed { i, _ -> i != idx }
+                                    .toMutableList()
+                            }) {
+                                Icon(Icons.Default.Delete, "삭제")
                             }
                         }
                     }
                 }
             }
+
             Button(onClick = {
                 TimePickerDialog(
                     context,
-                    { _, hr, min -> times.add(LocalTime.of(hr, min)) },
-                    LocalTime.now().hour, LocalTime.now().minute, true
+                    { _, hour, minute ->
+                        val newList = times.toMutableList()
+                        newList.add(LocalTime.of(hour, minute))
+                        times = newList
+                    },
+                    LocalTime.now().hour,
+                    LocalTime.now().minute,
+                    true
                 ).show()
             }) {
                 Text("시간 추가")
             }
 
-            Spacer(Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(1f))
 
             // 저장 & 삭제 버튼
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Button(onClick = {
                     viewModel.saveMedicineDetails(
                         countText.toIntOrNull(),
@@ -132,11 +151,11 @@ fun MedicineDetailScreen(
                 }
 
                 OutlinedButton(
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
                     onClick = {
                         viewModel.deleteMedicine()
                         navController.popBackStack()
-                    }
+                    },
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
                 ) {
                     Text("삭제")
                 }
