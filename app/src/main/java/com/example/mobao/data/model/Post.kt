@@ -2,7 +2,7 @@ package com.example.mobao.data.model
 
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.ServerTimestamp
-import com.google.firebase.Timestamp // Timestamp를 사용하려면 이 임포트가 필요합니다.
+import com.google.firebase.Timestamp
 
 data class Post(
     @DocumentId
@@ -11,5 +11,5 @@ data class Post(
     val content: String = "",
     val author: String = "",
     @ServerTimestamp
-    val timestamp: Timestamp? = null // 수정된 부분: Long 대신 Timestamp를 사용하고, nullable로 변경
+    val timestamp: Timestamp? = null
 )
