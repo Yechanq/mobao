@@ -6,6 +6,13 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import android.content.Context
+import com.example.mobao.data.repository.MedicineRepository
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
 
 @Module
@@ -17,4 +24,15 @@ abstract class RepositoryModule {
     abstract fun bindPostRepository(
         postRepositoryImpl: PostRepositoryImpl
     ): PostRepository
+}
+
+object RepositoryModule {
+
+    @Provides
+    @Singleton
+    fun provideMedicineRepository(
+        @ApplicationContext context: Context
+    ): MedicineRepository {
+        return MedicineRepository(context)
+    }
 }

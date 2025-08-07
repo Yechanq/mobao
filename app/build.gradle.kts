@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.mobao"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -43,6 +43,17 @@ android {
 }
 
 dependencies {
+    implementation("com.google.mlkit:text-recognition:16.0.0") // 최신 버전 확인 필요
+    implementation("androidx.camera:camera-camera2:1.3.0")
+    implementation("androidx.camera:camera-lifecycle:1.3.0")
+    implementation("androidx.camera:camera-view:1.3.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("com.google.code.gson:gson:2.10.1") // 최신 안정 버전
+    implementation("androidx.compose.material:material-icons-extended:1.5.0")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

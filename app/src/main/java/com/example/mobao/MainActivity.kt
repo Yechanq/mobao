@@ -20,10 +20,33 @@ import androidx.navigation.compose.rememberNavController
 import com.example.mobao.ui.theme.MobaoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import dagger.hilt.android.AndroidEntryPoint
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 알림 권한 요청 (Android 13 이상)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    1001
+                )
+            }
+        }
+
         setContent {
             MobaoTheme {
                 MainScreen()
@@ -58,7 +81,7 @@ fun BottomNavigationBar(navController: NavHostController) {
         BottomNavItem("1", Icons.Default.Home, "first"),
         BottomNavItem("2", Icons.Default.Call, "second"),
         BottomNavItem("3", Icons.Default.Notifications, "third"),
-        BottomNavItem("4", Icons.Default.Person, "forth")
+        BottomNavItem("4", Icons.Default.Person, "forthMain")
     )
 
     NavigationBar {
