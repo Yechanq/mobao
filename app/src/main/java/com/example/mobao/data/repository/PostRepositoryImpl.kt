@@ -45,4 +45,15 @@ class PostRepositoryImpl @Inject constructor(
         awaitClose { subscription.remove() }
     }
 
+    override suspend fun getPostById(postId: String): Post? {
+        return try {
+            firestore.collection("posts")
+                .document(postId)
+                .get()
+                .await()
+                .toObject(Post::class.java)
+        } catch (e: Exception) {
+            null // 오류 발생 시 null 반환
+        }
+    }
 }
