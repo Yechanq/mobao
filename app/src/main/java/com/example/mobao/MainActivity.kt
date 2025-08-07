@@ -18,6 +18,7 @@ import com.example.mobao.ui.navigation.AppNavigation
 import com.example.mobao.ui.navigation.BottomNavItem
 import androidx.navigation.compose.rememberNavController
 import com.example.mobao.ui.theme.MobaoTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 import android.Manifest
 import android.content.pm.PackageManager
