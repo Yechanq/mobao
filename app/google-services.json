@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "137637848126",
+    "project_number": "682722189103",
     "project_id": "mobao-2922d",
-    "storage_bucket": "mobao-fdbba.firebasestorage.app"
+    "storage_bucket": "mobao-2922d.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:137637848126:android:f0b810d53da8d7c965dd6f",
+        "mobilesdk_app_id": "1:682722189103:android:3f4736d957f50b72498bda",
         "android_client_info": {
           "package_name": "com.example.mobao"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCEiOWnkC76-RWTv2WU4Cb1QJcGwHhxizc"
+          "current_key": "AIzaSyDt3xcL-7WiRW0HshNgS6azaCQgwSYkKgI"
         }
       ],
       "services": {
